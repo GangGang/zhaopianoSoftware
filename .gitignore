@@ -156,4 +156,6 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+fixScore/setup.py
 setup.py
+build.command
