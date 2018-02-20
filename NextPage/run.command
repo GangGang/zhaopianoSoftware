@@ -1,3 +1,5 @@
 #!/bin/bash
-cd /Users/shidanlifuhetian/All/Tdevelop/zhaopianoSoftware/NextPage
+workdir=$(cd $(dirname $0); pwd)
+echo $workdir
+cd $workdir
 python3 main.py

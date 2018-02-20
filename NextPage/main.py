@@ -21,20 +21,30 @@ class ScoreViewer(tkinter.Toplevel):
         self.attributes("-fullscreen", True)
         self.load_scores()
         self.packUI()
-    def update_index(self):
-        if self.current_score_index == len(self.score_list)-1:
+    def update_index(self,plus=1):
+        #更新图片索引
+        self.current_score_index += plus
+
+        if self.current_score_index > len(self.score_list)-1:
             self.current_score_index = 0
-        else:
-            self.current_score_index += 1
+
+        if self.current_score_index < 0:
+            self.current_score_index = len(self.score_list)-1
 
     def printkey(self,event):
-        # print('你按下了: ' + event.char,'keycode:',event.keycode)# <KeyPress event state=Mod3 keysym=KP_Enter keycode=4980739 char='\x03' delta=4980739 x=-776 y=-53>
-        # print(event)
-        if(event.keysym=='KP_Enter'):
-            self.update_index()
+        print('你按下了: ' + event.char,'keycode:',event.keycode)# <KeyPress event state=Mod3 keysym=KP_Enter keycode=4980739 char='\x03' delta=4980739 x=-776 y=-53>
+        print(event)
+        next_page_keys=['KP_Enter','Right']
+        previous_page_keys=['Left']
+        if(event.keysym in next_page_keys):
+            self.update_index(plus=1)
             print('next page ',self.current_score_index)
-            # origin_img = Image.open(self.score_list[self.current_score_index])
-            # resized_img = self.resize_image(origin_img)
+            img = ImageTk.PhotoImage(self.all_scores[self.current_score_index])
+            self.label.configure(image=img)
+            self.label.photo = img
+        elif(event.keysym in previous_page_keys):
+            self.update_index(plus=-1)
+            print('previous page ',self.current_score_index)
             img = ImageTk.PhotoImage(self.all_scores[self.current_score_index])
             self.label.configure(image=img)
             self.label.photo = img
