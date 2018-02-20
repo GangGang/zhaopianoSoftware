@@ -19,15 +19,18 @@ class ScoreViewer(tkinter.Toplevel):
         # self.setup()
         self.bind('<Key>', self.printkey)
         self.attributes("-fullscreen", True)
-        self.load_scores()
+        self.update_idletasks()
+        print(self.winfo_width(),self.winfo_height())
+        real_height = self.winfo_height()
+        self.all_scores = []
+        self.load_scores(height=real_height)
         self.packUI()
+
     def update_index(self,plus=1):
         #更新图片索引
         self.current_score_index += plus
-
         if self.current_score_index > len(self.score_list)-1:
             self.current_score_index = 0
-
         if self.current_score_index < 0:
             self.current_score_index = len(self.score_list)-1
 
@@ -49,25 +52,18 @@ class ScoreViewer(tkinter.Toplevel):
             self.label.configure(image=img)
             self.label.photo = img
 
-    def setup(self):
-        self.parent.center_window(self, 600, 300)
-        self.parent.root.minsize(300, 300)
-        # self.parent.root.maxsize(600, 600)
-        self.parent.root.title('乐谱查看')
-    def load_scores(self):
+    def load_scores(self,height):
         for item in self.score_list:
             origin_img = Image.open(item)
-            resized_img = self.resize_image(origin_img)
+            resized_img = self.resize_image(origin_img,height)
             self.all_scores.append(resized_img)
-    def resize_image(self,img):
+    def resize_image(self,img,target_height):
         w, h = img.size
-        h_new = int(self.screen_height)
+        h_new = int(target_height)
         w_new = int((w / h) * h_new)
-        resized_img = img.resize((w_new, h_new))
+        resized_img = img.resize((w_new, h_new),resample=Image.BILINEAR)
         return resized_img
     def packUI(self):
-        # origin_img = Image.open(self.score_list[self.current_score_index])
-        # resized_img = self.resize_image(origin_img)
         img = ImageTk.PhotoImage(self.all_scores[self.current_score_index])
         self.label = Label(self, image=img)
         self.label.photo = img
@@ -81,6 +77,7 @@ class App(tkinter.Frame):
         self.pack()
         self.setup()
         self.pack_UI()
+
 
     def pack_UI(self):
         self.btn0 = tkinter.Button(self.root, text='选择含有乐谱图片的文件夹', command=self.load_scores)
