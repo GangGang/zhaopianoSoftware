@@ -39,18 +39,22 @@ class ScoreViewer(tkinter.Toplevel):
         print(event)
         next_page_keys=['KP_Enter','Right']
         previous_page_keys=['Left']
+        exit_keys = ['Escape']
         if(event.keysym in next_page_keys):
-            self.update_index(plus=1)
+            self.update_index(plus=2)
             print('next page ',self.current_score_index)
-            img = ImageTk.PhotoImage(self.all_scores[self.current_score_index])
-            self.label.configure(image=img)
-            self.label.photo = img
         elif(event.keysym in previous_page_keys):
-            self.update_index(plus=-1)
+            self.update_index(plus=-2)
             print('previous page ',self.current_score_index)
-            img = ImageTk.PhotoImage(self.all_scores[self.current_score_index])
-            self.label.configure(image=img)
-            self.label.photo = img
+        elif(event.keysym in exit_keys):
+            self.destroy()
+        img = ImageTk.PhotoImage(self.all_scores[self.current_score_index])
+        self.label.configure(image=img)
+        self.label.photo = img
+
+        img2 = ImageTk.PhotoImage(self.all_scores[self.current_score_index+1])
+        self.label2.configure(image=img2)
+        self.label2.photo = img2
 
     def load_scores(self,height):
         for item in self.score_list:
@@ -63,6 +67,10 @@ class ScoreViewer(tkinter.Toplevel):
 
             resized_img = self.resize_image(origin_img,height)
             self.all_scores.append(resized_img)
+        if int(len(self.all_scores))%2 != 0:
+            white_img = Image.new('RGB', self.all_scores[0].size, (255, 255, 255))
+            self.all_scores.append(white_img)
+
     def resize_image(self,img,target_height):
         w, h = img.size
         h_new = int(target_height)
@@ -71,9 +79,24 @@ class ScoreViewer(tkinter.Toplevel):
         return resized_img
     def packUI(self):
         img = ImageTk.PhotoImage(self.all_scores[self.current_score_index])
-        self.label = Label(self, image=img)
+        img2 = ImageTk.PhotoImage(self.all_scores[self.current_score_index+1])
+
+        # _,w = img._PhotoImage__size
+        w = int((self.winfo_width() - 2*img._PhotoImage__size[0])/2)
+        frm_0 = tkinter.Frame(self,width=w)
+        frm_0.pack(side='left')
+
+        frm_L = tkinter.Frame(self)
+        self.label = Label(frm_L, image=img)
         self.label.photo = img
         self.label.pack()
+        frm_L.pack(side='left')
+
+        frm_R = tkinter.Frame(self)
+        self.label2 = Label(frm_R, image=img2)
+        self.label2.photo = img2
+        self.label2.pack()
+        frm_R.pack(side='left')
 
 
 class App(tkinter.Frame):
