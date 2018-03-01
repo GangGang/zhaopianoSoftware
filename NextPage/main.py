@@ -55,6 +55,12 @@ class ScoreViewer(tkinter.Toplevel):
     def load_scores(self,height):
         for item in self.score_list:
             origin_img = Image.open(item)
+            if origin_img.mode == 'RGBA':
+                png = origin_img
+                background = Image.new('RGBA', png.size, (255, 255, 255))
+                alpha_composite = Image.alpha_composite(background, png)
+                origin_img = alpha_composite
+
             resized_img = self.resize_image(origin_img,height)
             self.all_scores.append(resized_img)
     def resize_image(self,img,target_height):
@@ -117,7 +123,7 @@ class App(tkinter.Frame):
         r = os.listdir(self.score_dir)
         score_list = []
         for item in r:
-            if item.split('.')[-1] == 'jpg':
+            if item.split('.')[-1] == 'jpg'or item.split('.')[-1] =='png':
                 score_list.append(self.score_dir+'/'+item)
         print(r)
         print(score_list)
