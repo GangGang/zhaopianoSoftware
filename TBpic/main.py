@@ -34,7 +34,7 @@ class Canvas():
     def formatImage(self,img,new_w = IMAGE_WIDTH,round_corner = -1):
         # new_w = IMAGE_WIDTH
         new_h = int((new_w/img.width)*img.height)
-        new_img = img.resize(size=(new_w,new_h))
+        new_img = img.resize(size=(new_w,new_h),resample= Image.BILINEAR)
 
         if round_corner > 0:
             mask = Image.new(mode='L',size=new_img.size) # 8bit灰度图
@@ -196,7 +196,7 @@ class App(tkinter.Frame):
                 c.append(img, round_corner=50)
         print(self.export_preview_only.get())
         c.export(save_to_disk=output_dir,preview_only=self.export_preview_only.get())
-        self.label2['text'] = '修复成功,文件存储在：\n'+output_dir
+        self.label2['text'] = '图片生成成功,文件存储在：\n'+output_dir
 
 root = tkinter.Tk()
 app = App(master=root)
