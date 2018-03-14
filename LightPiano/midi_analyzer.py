@@ -1,7 +1,4 @@
-import midi
-
-
-class Waterfall(object):
+class MidiAnalyzer(object):
 
     def __init__(self, midi_file):
         self.midi_file = midi_file
@@ -11,6 +8,8 @@ class Waterfall(object):
         self.n_event = 0
         self.clearMidiEvents()
         self.all_frames = []
+        self.tempo = 67
+        self.fps = 30
 
     def clearMidiEvents(self):  # save useful events only
         targets = ['NoteOnEvent', 'NoteOffEvent', 'EndOfTrackEvent']
@@ -58,26 +57,10 @@ class Waterfall(object):
         else:
             return '#80ffff'  # black note
 
-    def Continue(self):
-        frames_per_sec = 30  # the larger fps is the smaller delta is
+    def run(self):
         while not self.EndOfSong():
-            self.all_frames.append(self.state[21:109])
-            tps = (480 * 67) / 60
-            delta = int(tps / (frames_per_sec)) + 1  # ticks between two frames
+            self.all_frames.append(self.state[21:109])  # 88 piano keys
+            tps = (480 * self.tempo) / 60
+            delta = int(tps / (self.fps)) + 1  # ticks between two frames
             self.Advance(delta)  # update state( if possible)
-
-
-def main():
-    pattern = midi.read_midifile("4.mid")
-    # midi_file = midi.MidiFile('4.mid')
-    waterfall = Waterfall(pattern)
-    waterfall.Continue()
-    import json
-    a = json.dumps(waterfall.all_frames)
-    f = open('tps679.json', mode='w')
-    f.write(a)
-    f.close()
-
-
-if __name__ == '__main__':
-    main()
+        return self.all_frames
