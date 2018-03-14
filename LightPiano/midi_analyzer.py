@@ -3,12 +3,12 @@ class MidiAnalyzer(object):
     def __init__(self, midi_file):
         self.midi_file = midi_file
         self.midi_track = self._GetLongestTrack(self.midi_file)
+        self.get_tempo()
         self.state = [-1] * 256
         self.time = 0
         self.n_event = 0
         self.clearMidiEvents()
         self.all_frames = []
-        self.tempo = 67
         self.fps = 30
 
     def clearMidiEvents(self):  # save useful events only
@@ -26,7 +26,11 @@ class MidiAnalyzer(object):
             if len(longestTrack) < len(track):
                 longestTrack = track
         return longestTrack
-
+    def get_tempo(self):
+        for event in self.midi_track:
+            if event.__class__.__name__ == 'SetTempoEvent':
+                self.tempo = round(event.bpm)
+        print('tempo:',self.tempo)
     def EndOfSong(self):
         return self.n_event >= len(self.midi_track)
 
