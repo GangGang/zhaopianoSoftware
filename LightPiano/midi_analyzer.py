@@ -3,6 +3,7 @@ class MidiAnalyzer(object):
     def __init__(self, midi_file):
         self.midi_file = midi_file
         self.midi_track = self._GetLongestTrack(self.midi_file)
+        self.resolution = self.midi_file.resolution
         self.get_tempo()
         self.state = [-1] * 256
         self.time = 0
@@ -12,7 +13,7 @@ class MidiAnalyzer(object):
         self.fps = 30
 
     def clearMidiEvents(self):  # save useful events only
-        targets = ['NoteOnEvent', 'NoteOffEvent', 'EndOfTrackEvent']
+        targets = ['NoteOnEvent', 'NoteOffEvent','ControlChangeEvent', 'EndOfTrackEvent']
         i = 0
         while (i < len(self.midi_track)):
             if self.midi_track[i].__class__.__name__ not in targets:
@@ -51,6 +52,12 @@ class MidiAnalyzer(object):
                 self.state[event.pitch] = -1
             elif event.statusmsg == 0x90:
                 self.state[event.pitch] = self.time
+            elif event.statusmsg == 0xb0:
+                if event.value == 127:
+                    self.state[109] = 1
+                elif event.value == 0:
+                    self.state[109] = -1
+
 
     def WaterfallNoteColor(self, note):
         if note in self.active_notes:
@@ -63,8 +70,8 @@ class MidiAnalyzer(object):
 
     def run(self):
         while not self.EndOfSong():
-            self.all_frames.append(self.state[21:109])  # 88 piano keys
-            tps = (480 * self.tempo) / 60
-            delta = int(tps / (self.fps)) + 1  # ticks between two frames
+            self.all_frames.append(self.state[21:110])  # 88 piano keys + 1 pedal status
+            tps = self.resolution * self.tempo/60
+            delta = tps / self.fps  # ticks between two frames
             self.Advance(delta)  # update state( if possible)
         return self.all_frames

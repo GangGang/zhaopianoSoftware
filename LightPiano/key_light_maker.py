@@ -5,14 +5,17 @@ import os
 class KeyLight():
     def __init__(self,piano_key_status,dst,width=1280,fps=30):
         self.canvas_width = width
-        self.canvas_height = int(width*0.03)
+        self.canvas_height = int(width*0.05)
+        if self.canvas_height%2 !=0:
+            self.canvas_height+=1
         self.clean_canvas()
         self.key_width = int(self.canvas_width/88)
         self.piano_key_status = piano_key_status
         self.fps = fps
         self.dst = dst
         self.add_examine_status()
-
+        spot = cv2.imread('spot1.png',flags=-1)
+        self.spot = cv2.resize(spot, dsize=(int(self.key_width), int(self.key_width)))
 
     def draw(self,status):
         self.clean_canvas()
@@ -25,23 +28,28 @@ class KeyLight():
                 cv2.circle(self.canvas,center,radius,color=(0,255,0),thickness=-1)
     def draw_pic(self,status):
         self.clean_canvas()
-        spot = cv2.imread('spot1.png',flags=-1)
-        spot = cv2.resize(spot,dsize=(int(self.key_width),int(self.key_width)))
-        for i,key in enumerate(status):
-            # center = (int((i+1/2)*self.key_width),int(self.canvas_height/2))
-            # radius = int((self.key_width * 0.8)/2)
+        key_status = status[0:-1]# first 88 keys
+        pedal_status = status[-1]
+        for i,key in enumerate(key_status):
+
             if key > 0:
                 y1 = int((self.canvas_height- self.key_width))
                 y2 = y1 + self.key_width
                 x1 = int(i*self.key_width)
                 x2 = int((i+1)*self.key_width)
                 bg = Image.fromarray(self.canvas)
-                s = Image.fromarray(spot)
+                s = Image.fromarray(self.spot)
                 bg.paste(s,box=(x1,y1),mask=s)
                 self.canvas = np.array(bg)
             else:
                 pass
                 # cv2.circle(self.canvas,center,radius,color=(0,255,0),thickness=-1)
+
+        if pedal_status > 0:
+            center = (int((len(key_status)-1+1/2)*self.key_width),int(self.canvas_height/2))
+            radius = int((self.key_width * 0.8)/2)
+            cv2.circle(self.canvas, center, radius, color=(0, 255, 0), thickness=-1)
+
     def clean_canvas(self):
         self.canvas = np.zeros(shape=(self.canvas_height,self.canvas_width,4),dtype=np.uint8)
         self.canvas += 0xEB # 背景颜色
