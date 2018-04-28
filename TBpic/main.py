@@ -20,7 +20,7 @@ BLOCK_GAP = int((1-IMAGE_RATIO)*CANVAS_WIDTH/2)
 EXPORT_HEIGHT = 1920
 class Canvas():
     def __init__(self,width):
-        self.bg = self.formatImage(Image.open('bg5.jpg'),new_w=CANVAS_WIDTH)[0]
+        self.bg = self.formatImage(Image.open('bg6.jpg'),new_w=CANVAS_WIDTH)[0]
         self.exported_images = []
 
     def append(self,image,round_corner = -1):
@@ -201,4 +201,3 @@ class App(tkinter.Frame):
 root = tkinter.Tk()
 app = App(master=root)
 app.mainloop()
-

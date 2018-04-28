@@ -16,6 +16,11 @@ class KeyLight():
         self.add_examine_status()
         spot = cv2.imread('spot1.png',flags=-1)
         self.spot = cv2.resize(spot, dsize=(int(self.key_width), int(self.key_width)))
+        ped = cv2.imread('ped.png',flags=-1)
+        h, w, _ = ped.shape
+        h_ = self.key_width
+        w_ = (w / h) * h_
+        self.ped = cv2.resize(ped, dsize=(int(w_), int(h_)))
 
     def draw(self,status):
         self.clean_canvas()
@@ -46,9 +51,13 @@ class KeyLight():
                 # cv2.circle(self.canvas,center,radius,color=(0,255,0),thickness=-1)
 
         if pedal_status > 0:
-            center = (int((len(key_status)-1+1/2)*self.key_width),int(self.canvas_height/2))
-            radius = int((self.key_width * 0.8)/2)
-            cv2.circle(self.canvas, center, radius, color=(0, 255, 0), thickness=-1)
+            # center = (int((len(key_status)-1+1/2)*self.key_width),int(self.canvas_height/2))
+            # radius = int((self.key_width * 0.8)/2)
+            # cv2.circle(self.canvas, center, radius, color=(0, 255, 0), thickness=-1)
+            bg = Image.fromarray(self.canvas)
+            s = Image.fromarray(self.ped)
+            bg.paste(s, box=(int((len(key_status)-3)*self.key_width),int(self.canvas_height*0.3)), mask=s)
+            self.canvas = np.array(bg)
 
     def clean_canvas(self):
         self.canvas = np.zeros(shape=(self.canvas_height,self.canvas_width,4),dtype=np.uint8)
@@ -58,8 +67,8 @@ class KeyLight():
         for i in range(self.fps):
             self.piano_key_status.insert(0,examine_status)
     def run(self):
-        fourcc = cv2.VideoWriter_fourcc(*'X264')# X264 quality is better than MJPG
-        out = cv2.VideoWriter(self.dst, fourcc, self.fps, (self.canvas_width, self.canvas_height))
+        # fourcc = cv2.VideoWriter_fourcc(*'X264')# X264 quality is better than MJPG
+        out = cv2.VideoWriter(self.dst, 0x00000021, self.fps, (self.canvas_width, self.canvas_height))
         for s in self.piano_key_status:
             self.draw_pic(s)
             frame = self.canvas
