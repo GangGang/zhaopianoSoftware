@@ -149,6 +149,7 @@ class App(tkinter.Frame):
             if item.split('.')[-1] == 'jpg'or item.split('.')[-1] =='png':
                 score_list.append(self.score_dir+'/'+item)
         print(r)
+        score_list.sort()
         print(score_list)
         self.score_list = score_list
     def show_scores(self):
