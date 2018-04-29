@@ -2,6 +2,8 @@
 import tkinter
 from tkinter import *
 from tkinter import filedialog
+from tkinter import messagebox
+
 from midi_analyzer import MidiAnalyzer
 from key_light_maker import KeyLight
 import midi
@@ -11,20 +13,25 @@ from shutil import copyfile
 from PIL import Image, ImageTk
 import PIL
 import numpy as np
+import json
+
+
 class FixTool(tkinter.Toplevel):
     def __init__(self,parent):
         super().__init__()
         self.parent = parent
         self.screen_height = self.parent.screenheight
-        self.all_keys = {x:14*x for x in range(88)}    #以字典形式存储的键值对，key：value ,key为亮光索引0～87，value为当前亮光的横坐标0～1279
+        self.all_keys = {str(x):14*x for x in range(89)}    #以字典形式存储的键值对，长度89包含了按键及踏板，key：value ,key为亮光索引0～88，value为当前亮光的横坐标0～1279
         self.current_light_index = 0
+        self.light_y=0
         self.bind('<Key>', self.printkey)
         self.attributes("-fullscreen", True)
         # self.update_idletasks()
+        self.update_idletasks()
+        self.piano_img = self.load_piano_img().convert('RGBA')
         print(self.winfo_width(),self.winfo_height())
         real_height = self.winfo_height()
         self.packUI()
-        self.update_idletasks()
 
     def resize_image(self,img,target_width):
         w, h = img.size
@@ -37,8 +44,7 @@ class FixTool(tkinter.Toplevel):
         if origin_img.mode == 'RGBA':
             png = origin_img
             background = Image.new('RGBA', png.size, (255, 255, 255))
-            alpha_composite = Image.alpha_composite(background, png)
-            origin_img = alpha_composite
+            origin_img = Image.alpha_composite(background, png)
 
         resized_img = self.resize_image(origin_img, 1280)#1280*720
         return resized_img
@@ -46,21 +52,26 @@ class FixTool(tkinter.Toplevel):
         #canvas size should be 1280*720
         kl = KeyLight([], dst='', fps=1,width=1280)
         kl.draw_pic2(kl.piano_key_status[0],split_key=True,position=self.all_keys)
+        tmp = kl.piano_key_status[0]
+        for i,v in enumerate(tmp):
+            if i != self.current_light_index:
+                tmp[i] = 0
+            else:
+                tmp[i] = 1
+        kl.draw_sentinel(tmp,position=self.all_keys)
         frame = kl.canvas
         img = PIL.Image.fromarray(frame)
-        canvas.paste(img)
+        canvas.paste(img,box=(0,self.light_y))
         c = np.array(canvas)
         return c
+    def clean_canvas(self):
+        self.canvas = np.zeros(shape=(720,1280,4),dtype=np.uint8)
+        self.canvas += 0xEB # 背景颜色
     def packUI(self):
         piano_img = self.load_piano_img().convert('RGBA')
         self.canvas = self.add_lights(piano_img)
         c = PIL.Image.fromarray(self.canvas).convert('RGB')
         img = ImageTk.PhotoImage(c)
-        # img = self.canvas
-        # _,w = img._PhotoImage__size
-        # w = int(img._PhotoImage__size[0])
-        # frm_0 = tkinter.Frame(self,width=w)
-        # frm_0.pack(side='left')
 
         frm_L = tkinter.Frame(self)
         self.label = Label(frm_L, image=img)
@@ -72,7 +83,21 @@ class FixTool(tkinter.Toplevel):
         self.label2 = Label(frm_R)
         self.label2['text'] = '请设置'
         self.label2.pack()
+
+        self.scale1 = Scale(frm_R,from_=0,to=100,orient=HORIZONTAL,variable=self.light_y,command=self.adjust_light_y).pack()
+        self.btn0 = tkinter.Button(frm_R, text='导入亮光位置文件', command=self.load_keys)
+        self.btn0.pack()
+        self.button1 = Button(frm_R,text='导出亮光位置文件', command=self.export_keys)
+        self.button1.pack()
         frm_R.pack(side='left')
+    def update_canvas(self):
+        self.canvas = self.add_lights(self.piano_img)
+        c = PIL.Image.fromarray(self.canvas).convert('RGB')
+        img = ImageTk.PhotoImage(c)
+        self.label.configure(image=img)
+        self.label.photo = img
+        # self.canvas = None
+        self.clean_canvas()
     def update_index(self,plus=1):
         #更新亮光索引
         self.current_light_index += plus
@@ -81,7 +106,10 @@ class FixTool(tkinter.Toplevel):
         if self.current_light_index < 0:
             self.current_light_index = 88-1
     def update_key_position(self,key_index,plus=1):
-        self.all_keys[key_index]+=plus
+        self.all_keys[str(key_index)]+=plus
+    def adjust_light_y(self,v):
+        self.light_y = int(v)
+        self.update_canvas()
     def printkey(self,event):
         print('你按下了: ' + event.char,'keycode:',event.keycode)# <KeyPress event state=Mod3 keysym=KP_Enter keycode=4980739 char='\x03' delta=4980739 x=-776 y=-53>
         print(event)
@@ -102,27 +130,25 @@ class FixTool(tkinter.Toplevel):
         elif(event.keysym in move_left_keys):
             self.update_key_position(key_index=self.current_light_index,plus=-1)
             print('亮光左移')
-
         elif(event.keysym in exit_keys):
             self.destroy()
-        # img = ImageTk.PhotoImage(self.all_scores[self.current_light_index])
-        # self.label.configure(image=img)
-        # self.label.photo = img
-        #
-        # img2 = ImageTk.PhotoImage(self.all_scores[self.current_light_index + 1])
-        # self.label2.configure(image=img2)
-        # self.label2.photo = img2
-    # def setup(self):
-    #     self.center_window(self.root, 600, 300)
-    #     self.root.minsize(300, 300)
-    #     self.root.maxsize(600, 600)
-    #     self.root.title('亮光位置修复工具')
-    # def center_window(self,root, width, height):
-    #     screenwidth = root.winfo_screenwidth()
-    #     screenheight = root.winfo_screenheight()
-    #     size = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
-    #     print(size)
-    #     root.geometry(size)
+        self.update_canvas()
+    def export_keys(self):
+        json_str = json.dumps(self.all_keys)
+        name = filedialog.asksaveasfilename(title='保存文件', initialdir='./', initialfile='light_key.json')
+
+        f = open(name,mode='w')
+        f.write(json_str)
+        f.close()
+        messagebox.showinfo('','配置文件保存完成！')
+    def load_keys(self):
+        filename = filedialog.askopenfilename()
+        print(filename)
+        f = open(filename,mode='r')
+        json_str = f.read()
+        self.all_keys = json.loads(json_str)
+        f.close()
+        self.update_canvas()
 class App(tkinter.Frame):
     def __init__(self,master=None):
         super().__init__(master)
