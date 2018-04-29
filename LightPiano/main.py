@@ -84,7 +84,7 @@ class FixTool(tkinter.Toplevel):
         self.label2['text'] = '请设置'
         self.label2.pack()
 
-        self.scale1 = Scale(frm_R,from_=0,to=100,orient=HORIZONTAL,variable=self.light_y,command=self.adjust_light_y).pack()
+        self.scale1 = Scale(frm_R,from_=350,to=700,orient=HORIZONTAL,variable=self.light_y,command=self.adjust_light_y).pack()
         self.btn0 = tkinter.Button(frm_R, text='导入亮光位置文件', command=self.load_keys)
         self.btn0.pack()
         self.button1 = Button(frm_R,text='导出亮光位置文件', command=self.export_keys)
@@ -136,7 +136,6 @@ class FixTool(tkinter.Toplevel):
     def export_keys(self):
         json_str = json.dumps(self.all_keys)
         name = filedialog.asksaveasfilename(title='保存文件', initialdir='./', initialfile='light_key.json')
-
         f = open(name,mode='w')
         f.write(json_str)
         f.close()
@@ -158,11 +157,13 @@ class App(tkinter.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        self.btn1 = tkinter.Button(self.root, text='选择midi文件', command=self.open_file).pack()
-        self.label1 = tkinter.Label(self.root).pack()
-        self.btn2 = tkinter.Button(self.root, text='开始导出按键亮光视频', command=self.do_actions).pack()
-        self.label2 = tkinter.Label(self.root).pack()
-        self.btn3 = tkinter.Button(self.root,text='修正亮光位置',command=self.show_fixtool).pack()
+        self.btn1 = tkinter.Button(self.root, text='选择midi文件', command=self.open_file);self.btn1.pack()
+        self.label1 = tkinter.Label(self.root);self.label1.pack()
+        self.btn4 = tkinter.Button(self.root, text='选择亮光位置配置json文件', command=self.load_keys);self.btn4.pack()
+        self.label4 = tkinter.Label(self.root);self.label4.pack()
+        self.btn2 = tkinter.Button(self.root, text='开始导出按键亮光视频', command=self.do_actions);self.btn2.pack()
+        self.label2 = tkinter.Label(self.root);self.label2.pack()
+        self.btn3 = tkinter.Button(self.root,text='修正亮光位置',command=self.show_fixtool);self.btn3.pack()
 
 
     def get_screen_size(self,window):
@@ -195,6 +196,14 @@ class App(tkinter.Frame):
         ma = MidiAnalyzer(pattern)
         self.piano_key_status = ma.run()
         self.fps = ma.fps
+    def load_keys(self):
+        filename = filedialog.askopenfilename()
+        print(filename)
+        f = open(filename,mode='r')
+        json_str = f.read()
+        self.all_keys = json.loads(json_str)
+        f.close()
+        self.label4['text'] = '配置文件载入完毕：'+filename
     def export_video(self):
         output_dir = os.path.dirname(self.file_path)
         origin_file_name = os.path.basename(self.file_path).split('.')[-2]
@@ -204,9 +213,13 @@ class App(tkinter.Frame):
             os.remove(output_tmp_file_name)
         if os.path.isfile(output_file_name):
             os.remove(output_file_name)
-        frame_width = 1920#1280
+        frame_width = 1280
 
-        kl = KeyLight(piano_key_status=self.piano_key_status,dst = output_tmp_file_name,width=frame_width,fps=self.fps)
+        kl = KeyLight(piano_key_status=self.piano_key_status,
+                      dst = output_tmp_file_name,
+                      width=frame_width,
+                      fps=self.fps,
+                      position=self.all_keys)
         kl.run()
 
         copyfile(output_tmp_file_name, output_file_name)

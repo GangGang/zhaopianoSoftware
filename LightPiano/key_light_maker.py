@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 import os
 class KeyLight():
-    def __init__(self,piano_key_status,dst,width=1280,fps=30):
+    def __init__(self,piano_key_status,dst,width=1280,fps=30,position={}):
         self.canvas_width = width
         self.canvas_height = int(width*0.05)
         if self.canvas_height%2 !=0:
@@ -23,6 +23,7 @@ class KeyLight():
         h_ = self.key_width
         w_ = (w / h) * h_
         self.ped = cv2.resize(ped, dsize=(int(w_), int(h_)))
+        self.position = position
 
     def draw(self,status):
         self.clean_canvas()
@@ -141,9 +142,9 @@ class KeyLight():
         out = cv2.VideoWriter(self.dst, 0x00000021, self.fps, (self.canvas_width, self.canvas_height))
         for index,s in enumerate(self.piano_key_status):
             if index <= 2*self.fps:#前两秒单独画
-                self.draw_pic(s,split_key=True)
+                self.draw_pic2(s,split_key=True,position=self.position)
             else:
-                self.draw_pic(s)
+                self.draw_pic2(s,position=self.position)
             frame = self.canvas
             out.write(frame)
         out.release()
