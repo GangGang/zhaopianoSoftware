@@ -106,6 +106,10 @@ class FixTool(tkinter.Toplevel):
         if self.current_light_index < 0:
             self.current_light_index = 88-1
     def update_key_position(self,key_index,plus=1):
+        for i in range(key_index,len(self.all_keys)):
+            if i >= key_index:
+                self.all_keys[str(i)]+=plus
+    def update_single_key_position(self,key_index,plus=1):
         self.all_keys[str(key_index)]+=plus
     def adjust_light_y(self,v):
         self.light_y = int(v)
