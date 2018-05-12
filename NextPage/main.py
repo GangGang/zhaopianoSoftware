@@ -15,6 +15,7 @@ class ScoreViewer(tkinter.Toplevel):
         self.score_list = self.parent.score_list
         self.all_scores = []
         self.current_score_index = 0
+        self.next_page_gap = 1 # 一次翻动的页数
         print('load:',parent.score_dir)
         # self.setup()
         self.bind('<Key>', self.printkey)
@@ -41,10 +42,10 @@ class ScoreViewer(tkinter.Toplevel):
         previous_page_keys=['Left']
         exit_keys = ['Escape']
         if(event.keysym in next_page_keys):
-            self.update_index(plus=2)
+            self.update_index(plus=self.next_page_gap)
             print('next page ',self.current_score_index)
         elif(event.keysym in previous_page_keys):
-            self.update_index(plus=-2)
+            self.update_index(plus=-self.next_page_gap)
             print('previous page ',self.current_score_index)
         elif(event.keysym in exit_keys):
             self.destroy()
@@ -52,7 +53,11 @@ class ScoreViewer(tkinter.Toplevel):
         self.label.configure(image=img)
         self.label.photo = img
 
-        img2 = ImageTk.PhotoImage(self.all_scores[self.current_score_index+1])
+        if self.current_score_index == len(self.all_scores)-1:
+            right_score_index = 0
+        else:
+            right_score_index = self.current_score_index +1
+        img2 = ImageTk.PhotoImage(self.all_scores[right_score_index])
         self.label2.configure(image=img2)
         self.label2.photo = img2
 
@@ -67,7 +72,7 @@ class ScoreViewer(tkinter.Toplevel):
 
             resized_img = self.resize_image(origin_img,height)
             self.all_scores.append(resized_img)
-        if int(len(self.all_scores))%2 != 0:
+        if self.next_page_gap == 2 and int(len(self.all_scores))%2 != 0:
             white_img = Image.new('RGB', self.all_scores[0].size, (255, 255, 255))
             self.all_scores.append(white_img)
 
