@@ -31,7 +31,12 @@ class MidiAnalyzer(object):
         for event in self.midi_track:
             if event.__class__.__name__ == 'SetTempoEvent':
                 self.tempo = round(event.bpm)
-        print('tempo:',self.tempo)
+        if hasattr(self,'tempo'):
+            print('tempo:',self.tempo)
+        else:
+            print('无tempo信息，使用默认67tempo')
+            self.tempo = 67
+
     def EndOfSong(self):
         return self.n_event >= len(self.midi_track)
 

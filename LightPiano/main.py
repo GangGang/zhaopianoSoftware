@@ -84,7 +84,7 @@ class FixTool(tkinter.Toplevel):
         self.label2['text'] = '请设置'
         self.label2.pack()
 
-        self.scale1 = Scale(frm_R,from_=350,to=700,orient=HORIZONTAL,variable=self.light_y,command=self.adjust_light_y).pack()
+        self.scale1 = Scale(frm_R,from_=350,to=450,orient=HORIZONTAL,variable=self.light_y,command=self.adjust_light_y).pack()
         self.btn0 = tkinter.Button(frm_R, text='导入亮光位置文件', command=self.load_keys)
         self.btn0.pack()
         self.button1 = Button(frm_R,text='导出亮光位置文件', command=self.export_keys)
@@ -210,6 +210,7 @@ class App(tkinter.Frame):
         self.label4['text'] = '配置文件载入完毕：'+filename
     def export_video(self):
         output_dir = os.path.dirname(self.file_path)
+        output_dir = './' #由于外置磁盘无法写入，暂时改成存储在项目里面
         origin_file_name = os.path.basename(self.file_path).split('.')[-2]
         output_file_name = output_dir+'/'+origin_file_name+'.mp4'
         output_tmp_file_name = output_dir+'/tmp_keylight_video.mp4'
