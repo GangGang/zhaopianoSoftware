@@ -13,3 +13,12 @@ NextPage
 
 fixScore  
 Logic Pro X 10.4版本的导出xml文件有些问题，用这个工具修复一下再导入musescore编辑乐谱
+
+splitScore
+将PNG曲谱按照一行行的来分割，方便导入Premiere编辑
+
+InsertImage  
+将一张新图插入到按顺序排序一堆图中。输出的新图顺序。
+
+RegulizeScore
+将手动裁切下来的乐谱对齐
