@@ -4,7 +4,7 @@ import tkinter
 from tkinter import filedialog
 import xml.etree.ElementTree as ET
 import os
-from RegulizeScore.util import regulize_image,export_file
+from util import regulize_image,export_file
 class App(tkinter.Frame):
     def __init__(self,master=None):
         super().__init__(master)
